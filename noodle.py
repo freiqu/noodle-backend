@@ -11,43 +11,51 @@ current_time = datetime.datetime.now(pytz.timezone('Europe/Berlin'))
 app = Flask(__name__)
 CORS(app)
 user = "Noodle"
-curID = 0
 
 connect = sqlite3.connect('comments.db')
 connect.execute(
     'CREATE TABLE IF NOT EXISTS COMMENTS (ID INTEGER, content TEXT, user TEXT, time TEXT)')
 
 
-def insert(content, user, time=datetime.datetime.now(pytz.timezone('Europe/Berlin'))):
-    global curID
+def insert(content, user, time=str(datetime.datetime.now(pytz.timezone('Europe/Berlin')))):
     connect = sqlite3.connect('comments.db')
-    connect.execute("INSERT INTO COMMENTS (ID,content,user,time) VALUES (?,?,?,?)",
-                    (curID, content, user, time))
-    curID += 1
+    cursor = connect.cursor()
+    cursor.execute("SELECT MAX(ID) FROM COMMENTS")
+    id = int(cursor.fetchall()[0][0])
+    id += 1
+    cursor.execute("INSERT INTO COMMENTS (ID,content,user,time) VALUES (?,?,?,?)",
+                   (id, content, user, time[:19]))
+    connect.commit()
 
 
 def read():
     connect = sqlite3.connect('comments.db')
-    posts = connect.execute('SELECT * FROM COMMENTS;')
+    cursor = connect.cursor()
+    cursor.execute('SELECT * FROM COMMENTS')
+    data = cursor.fetchall()
+    posts = {'comments': []}
+    for i in data:
+        posts['comments'].append(
+            {'id': i[0], 'content': i[1], 'user': i[2], 'time': i[3]})
+    comments = json.dumps(posts)
+    return comments
 
 
 @app.route('/')
 def index():
     return Response('index.html', status=200, mimetype="text/plain")
 
+@app.route('/posts', methods=['GET'])
+def postsGET():
+    posts = read()
+    return Response(posts, status=200, mimetype="application/json")
 
-@app.route('/news', methods=['GET'])
-def news():
-    if request.method == 'GET':
-        connect = sqlite3.connect('comments.db')
-        cursor = connect.cursor()
-        cursor.execute('SELECT * FROM COMMENTS')
-
-        data = cursor.fetchall()
-        comments = {}
-        for i in data:
-            pass
-        return Response(status=200, mimetype="text/plain")
+@app.route('/posts', methods=['POST'])
+def postsPOST():
+    user = request.json["user"]
+    content = request.json["content"]
+    insert(content, user)
+    return Response(status=200, mimetype="text/plain")
 
 
 """
