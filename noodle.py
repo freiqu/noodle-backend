@@ -16,7 +16,7 @@ connect.execute(
     'CREATE TABLE IF NOT EXISTS COMMENTS (ID INTEGER, content TEXT, user TEXT, time TEXT)')
 
 
-def insert(content, user, time=str(datetime.datetime.now(pytz.timezone('Europe/Berlin')))):
+def insert(content, user="anonymous"):
     connect = sqlite3.connect('comments.db')
     cursor = connect.cursor()
     cursor.execute("SELECT MAX(ID) FROM COMMENTS")
