@@ -1,9 +1,8 @@
-from flask import Flask, Response, request, render_template, json
+from flask import Flask, Response, request, json
 from flask_cors import CORS
 import sqlite3
 import datetime
 import pytz
-import secretstorage
 
 
 current_time = datetime.datetime.now(pytz.timezone('Europe/Berlin'))
