@@ -66,7 +66,7 @@ def postsPOST():
 """
 {
     "posts": {
-        "content": "hab heute dies un das gemacht"
+        "content": "hab heute dies und das gemacht"
         "user": "Reiner Zufall"
         "time": "2023-03-23 14:21:34"
     }
