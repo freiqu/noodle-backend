@@ -26,6 +26,8 @@ def insert(content, user, time=str(datetime.datetime.now(pytz.timezone('Europe/B
     cursor.execute("INSERT INTO COMMENTS (ID,content,user,time) VALUES (?,?,?,?)",
                    (id, content, user, time[:19]))
     connect.commit()
+    post = {"id": id, "content": content, "user": user, "time": time}
+    return json.dumps(post)
 
 
 def read():
@@ -37,8 +39,7 @@ def read():
     for i in data:
         posts['comments'].append(
             {'id': i[0], 'content': i[1], 'user': i[2], 'time': i[3]})
-    comments = json.dumps(posts)
-    return comments
+    return json.dumps(posts)
 
 
 @app.route('/')
@@ -54,8 +55,8 @@ def postsGET():
 def postsPOST():
     user = request.json["user"]
     content = request.json["content"]
-    insert(content, user)
-    return Response(status=200, mimetype="text/plain")
+    post = insert(content, user)
+    return Response(post, status=200, mimetype="application/json")
 
 
 """
