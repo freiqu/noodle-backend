@@ -28,9 +28,9 @@ def insert(content, user, time=str(datetime.datetime.now(pytz.timezone('Europe/B
         id = int(id)
         id += 1
     cursor.execute("INSERT INTO COMMENTS (ID,content,user,time) VALUES (?,?,?,?)",
-                   (id, content, user, time[:19]))
+                   (id, content, user, str(datetime.datetime.now(pytz.timezone('Europe/Berlin')))[:19]))
     connect.commit()
-    post = {"id": id, "content": content, "user": user, "time": time[:19]}
+    post = {"id": id, "content": content, "user": user, "time": str(datetime.datetime.now(pytz.timezone('Europe/Berlin')))[:19]}
     return json.dumps(post)
 
 
