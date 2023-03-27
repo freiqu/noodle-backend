@@ -21,12 +21,16 @@ def insert(content, user, time=str(datetime.datetime.now(pytz.timezone('Europe/B
     connect = sqlite3.connect('comments.db')
     cursor = connect.cursor()
     cursor.execute("SELECT MAX(ID) FROM COMMENTS")
-    id = int(cursor.fetchall()[0][0])
-    id += 1
+    id = cursor.fetchall()[0][0]
+    if id == None:
+        id = 0
+    else:
+        id = int(id)
+        id += 1
     cursor.execute("INSERT INTO COMMENTS (ID,content,user,time) VALUES (?,?,?,?)",
                    (id, content, user, time[:19]))
     connect.commit()
-    post = {"id": id, "content": content, "user": user, "time": time}
+    post = {"id": id, "content": content, "user": user, "time": time[:19]}
     return json.dumps(post)
 
 
@@ -39,7 +43,8 @@ def read():
     for i in data:
         posts['comments'].append(
             {'id': i[0], 'content': i[1], 'user': i[2], 'time': i[3]})
-    return json.dumps(posts)
+    comments = json.dumps(posts)
+    return comments
 
 
 @app.route('/')
