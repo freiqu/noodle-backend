@@ -54,6 +54,8 @@ def update(id, new_content):
     connect = sqlite3.connect('comments.db')
     cursor = connect.cursor()
     time = str(datetime.datetime.now(pytz.timezone('Europe/Berlin')))[:19]
+    new_content = "\'" + new_content + "\'"
+    time = "\'" + time + "\'"
     cursor.execute("UPDATE COMMENTS SET content = {0}, time = {1} WHERE ID = {2} ;".format(new_content, time, id))
     connect.commit()
 
