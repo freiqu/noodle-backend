@@ -32,7 +32,6 @@ def insert(content, user="anonymous"):
     post = {"id": id, "content": content, "user": user, "time": str(datetime.datetime.now(pytz.timezone('Europe/Berlin')))[:19]}
     return json.dumps(post)
 
-
 def read():
     connect = sqlite3.connect('comments.db')
     cursor = connect.cursor()
@@ -46,10 +45,6 @@ def read():
     return comments
 
 
-@app.route('/')
-def index():
-    return Response('index.html', status=200, mimetype="text/plain")
-
 @app.route('/posts', methods=['GET'])
 def postsGET():
     posts = read()
@@ -61,14 +56,3 @@ def postsPOST():
     content = request.json["content"]
     post = insert(content, user)
     return Response(post, status=200, mimetype="application/json")
-
-
-"""
-{
-    "posts": {
-        "content": "hab heute dies und das gemacht"
-        "user": "Reiner Zufall"
-        "time": "2023-03-23 14:21:34"
-    }
-}
-"""
