@@ -44,6 +44,19 @@ def read():
     comments = json.dumps(posts)
     return comments
 
+def delete(id):
+    connect = sqlite3.connect('comments.db')
+    cursor = connect.cursor()
+    cursor.execute("DELETE FROM COMMENTS WHERE ID=%s" % id)
+    connect.commit()
+
+def update(id, new_content):
+    connect = sqlite3.connect('comments.db')
+    cursor = connect.cursor()
+    time = str(datetime.datetime.now(pytz.timezone('Europe/Berlin')))[:19]
+    cursor.execute("UPDATE COMMENTS SET content = {0}, time = {1} WHERE ID = {2} ;".format(new_content, time, id))
+    connect.commit()
+
 
 @app.route('/posts', methods=['GET'])
 def postsGET():
@@ -56,3 +69,18 @@ def postsPOST():
     content = request.json["content"]
     post = insert(content, user)
     return Response(post, status=200, mimetype="application/json")
+
+@app.route('/posts', methods=['DELETE'])
+def postsDELETE():
+    id = request.json['id']
+    delete(id)
+    posts = read()
+    return Response(posts, status=200, mimetype="application/json")
+
+@app.route('/posts', methods=['PUT'])
+def postsPUT():
+    id = request.json['id']
+    new_content = request.json['new_content']
+    update(id, new_content)
+    posts = read()
+    return Response(posts, status=200, mimetype="application/json")
