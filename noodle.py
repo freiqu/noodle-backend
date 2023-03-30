@@ -9,11 +9,10 @@ current_time = datetime.datetime.now(pytz.timezone('Europe/Berlin'))
 
 app = Flask(__name__)
 CORS(app)
-user = "Noodle"
 
 connect = sqlite3.connect('comments.db')
 connect.execute(
-    'CREATE TABLE IF NOT EXISTS COMMENTS (ID INTEGER, content TEXT, user TEXT, time TEXT)')
+    'CREATE TABLE IF NOT EXISTS COMMENTS (ID INTEGER, content TEXT, user TEXT, time TEXT, up INTEGER, down INTEGER)')
 
 
 def insert(content, user="anonymous"):
@@ -30,10 +29,10 @@ def insert(content, user="anonymous"):
     else:
         id = int(id)
         id += 1
-    cursor.execute("INSERT INTO COMMENTS (ID,content,user,time) VALUES (?,?,?,?)",
-                   (id, content, user, str(datetime.datetime.now(pytz.timezone('Europe/Berlin')))[:19]))
+    cursor.execute("INSERT INTO COMMENTS (ID,content,user,time,up,down) VALUES (?,?,?,?,?,?)",
+                   (id, content, user, str(datetime.datetime.now(pytz.timezone('Europe/Berlin')))[:19], 0, 0))
     connect.commit()
-    post = {"id": id, "content": content, "user": user, "time": str(datetime.datetime.now(pytz.timezone('Europe/Berlin')))[:19]}
+    post = {"id": id, "content": content, "user": user, "time": str(datetime.datetime.now(pytz.timezone('Europe/Berlin')))[:19], "up": 0, "down": 0}
     return json.dumps(post)
 
 def read():
@@ -43,7 +42,7 @@ def read():
     data = cursor.fetchall()
     posts = {'comments': []}
     for i in data:
-        posts['comments'].append({'id': i[0], 'content': i[1], 'user': i[2], 'time': i[3]})
+        posts['comments'].append({'id': i[0], 'content': i[1], 'user': i[2], 'time': i[3], "up": i[4], "down": i[5]})
     comments = json.dumps(posts)
     return comments
 
@@ -62,6 +61,40 @@ def update(id, new_content):
     cursor.execute("UPDATE COMMENTS SET content = {0}, time = {1} WHERE ID = {2} ;".format(new_content, time, id))
     connect.commit()
 
+def thumb(updown, id):
+    connect = sqlite3.connect('comments.db')
+    cursor = connect.cursor()
+    cursor.execute('SELECT * FROM COMMENTS')
+    data = cursor.fetchall()
+    up = 0
+    down = 0
+    if id[0] == "d":
+        id = int(id[4:])
+    elif id[0] == "u":
+        id = int(id[2:])
+    for i in data:
+        if i[0] == id:
+            up = i[4]
+            down = i[5]
+    up += 1
+    down += 1
+    cursor = connect.cursor()
+    if updown == "up":
+        print("{} up at {}".format(up, id))
+        cursor.execute('UPDATE COMMENTS SET up = {0} WHERE ID = {1};'.format(up, id))
+    elif updown == "down":
+        print("{} down at {}".format(down, id))
+        cursor.execute('UPDATE COMMENTS SET down = {0} WHERE ID = {1};'.format(down, id))
+    connect.commit()
+
+
+@app.route('/posts/thumb', methods=['POST'])
+def thumbs():
+    updown = request.json['updown']
+    id = request.json['id']
+    thumb(updown, id)
+    posts = read()
+    return Response(posts, status=200, mimetype="application/json")
 
 @app.route('/posts', methods=['GET'])
 def postsGET():
