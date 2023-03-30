@@ -17,6 +17,10 @@ connect.execute(
 
 
 def insert(content, user="anonymous"):
+    print("Insert:")
+    print(content)
+    print(user)
+    print()
     connect = sqlite3.connect('comments.db')
     cursor = connect.cursor()
     cursor.execute("SELECT MAX(ID) FROM COMMENTS")
@@ -39,8 +43,7 @@ def read():
     data = cursor.fetchall()
     posts = {'comments': []}
     for i in data:
-        posts['comments'].append(
-            {'id': i[0], 'content': i[1], 'user': i[2], 'time': i[3]})
+        posts['comments'].append({'id': i[0], 'content': i[1], 'user': i[2], 'time': i[3]})
     comments = json.dumps(posts)
     return comments
 
