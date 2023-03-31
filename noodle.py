@@ -89,7 +89,7 @@ def thumb(updown, id):
 
 
 @app.route('/posts/thumb', methods=['POST'])
-def thumbs():
+def thumbsPOST():
     updown = request.json['updown']
     id = request.json['id']
     thumb(updown, id)
